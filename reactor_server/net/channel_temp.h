@@ -1,23 +1,28 @@
-#ifndef __rs_channel_h__
-#define __rs_channel_h__
+#ifndef __rs_channel_temp_h__
+#define __rs_channel_temp_h__
 
 #include <cstdint>
 #include <functional>
 #include <sys/epoll.h>
 #include <memory>
 
+namespace rs_poller
+{
+    class Poller;
+}
+
 namespace rs_channel
 {
     // 事件处理回调（参数后续设置）
     using event_callback_t = std::function<void()>;
 
-    class Channel
+    class Channel : public std::enable_shared_from_this<Channel>
     {
     public:
         using ptr = std::shared_ptr<Channel>;
 
-        Channel(int fd)
-            : fd_(fd)
+        Channel(std::shared_ptr<Poller> poller, int fd)
+            : fd_(fd), poller_(poller)
         {
         }
 
@@ -37,41 +42,45 @@ namespace rs_channel
         void enableConcerningReadFd()
         {
             events_ |= EPOLLIN;
-            // 待完善后续操作
+            update();
         }
 
         // 启用写事件关心
         void enableConcerningWriteFd()
         {
             events_ |= EPOLLOUT;
-            // 待完善后续操作
+            update();
         }
 
         // 关闭读事件关心
         void disableConcerningReadFd()
         {
             events_ &= ~EPOLLIN;
-            // 待完善后续操作
+            update();
         }
 
         // 关闭写事件
         void disableConcerningWriteFd()
         {
             events_ &= ~EPOLLOUT;
-            // 待完善后续操作
+            update();
         }
 
         // 关闭所有事件关心
         void disableConcerningAll()
         {
             events_ = 0;
+            update();
         }
 
         // 移动指定文件描述符关心
         void removeFd()
         {
-            // 待完善具体操作
+            remove();
         }
+
+        void remove();
+        void update();
 
         // 根据具体时间调用对应的回调函数
         void handleEvent()
@@ -173,6 +182,8 @@ namespace rs_channel
         event_callback_t error_cb_; // 错误事件回调
         event_callback_t close_cb_; // 连接断开事件回调
         event_callback_t any_cb_;   // 任意事件回调
+
+        std::shared_ptr<rs_poller::Poller> poller_;
     };
 }
 
