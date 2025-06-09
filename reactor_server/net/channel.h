@@ -17,7 +17,7 @@ namespace rs_channel
         using ptr = std::shared_ptr<Channel>;
 
         Channel(int fd)
-            : fd_(fd)
+            : fd_(fd), events_(0), revents_(0)
         {
         }
 
