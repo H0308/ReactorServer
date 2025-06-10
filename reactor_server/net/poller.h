@@ -53,7 +53,7 @@ namespace rs_poller
         }
 
         // 开启监控并获取就绪数组
-        void startEpoll(std::vector<rs_channel::Channel::ptr> &channels)
+        int startEpoll(std::vector<rs_channel::Channel::ptr> &channels)
         {
             // 阻塞等待
             int nfds = epoll_wait(epfd_, epoll_events_.data(), max_ready_events, -1);
@@ -61,7 +61,7 @@ namespace rs_poller
             {
                 // 被中断打断，属于可接受范围
                 if(errno == EINTR)
-                    return;
+                    return 0;
                 LOG(Level::Error, "事件等待失败：{}", strerror(errno));
                 exit(static_cast<int>(rs_error::ErrorNum::Epoll_wait_fail));
             }
@@ -77,6 +77,8 @@ namespace rs_poller
                 channel->setReadyEvents(epoll_events_[i].events);
                 channels.emplace_back(channel);
             }
+
+            return nfds;
         }
 
     private:
