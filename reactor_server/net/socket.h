@@ -21,6 +21,8 @@ namespace rs_socket
     class Socket
     {
     public:
+        using ptr = std::shared_ptr<Socket>;
+
         // 委托构造
         Socket()
             : Socket(-1)
@@ -113,7 +115,7 @@ namespace rs_socket
         }
 
         // 发送
-        ssize_t send_block(void *buf, size_t len, int flag = 0)
+        ssize_t send_block(const void *buf, size_t len, int flag = 0)
         {
             ssize_t ret = send(sockfd_, buf, len, flag);
             if(ret < 0)
@@ -137,11 +139,17 @@ namespace rs_socket
         ssize_t recv_block(void *buf, size_t len, int flag = 0)
         {
             ssize_t ret = recv(sockfd_, buf, len, flag);
-            if (ret <= 0)
+            if (ret < 0)
             {
                 if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
                     return 0;
                 LOG(Level::Error, "接收失败");
+                return -1;
+            }
+            else if (ret == 0)
+            {
+                // 对端正常关闭连接
+                LOG(Level::Info, "客户端断开连接");
                 return -1;
             }
 
@@ -202,6 +210,12 @@ namespace rs_socket
         {
             int flag = fcntl(sockfd_, F_GETFL, 0);
             fcntl(sockfd_, F_SETFL, flag | O_NONBLOCK);
+        }
+
+        // 获取监听套接字
+        int getSockFd()
+        {
+            return sockfd_;
         }
 
         ~Socket()

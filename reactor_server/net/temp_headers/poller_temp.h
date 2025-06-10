@@ -7,7 +7,7 @@
 #include <vector>
 #include <reactor_server/base/log.h>
 #include <reactor_server/base/error.h>
-#include <reactor_server/net/channel_temp.h>
+#include <reactor_server/net/temp_headers/channel_temp.h>
 
 namespace rs_poller
 {
@@ -50,10 +50,12 @@ namespace rs_poller
             if(it == channels_.end())
                 return;
             update(EPOLL_CTL_DEL, channel);
+            // 从管理结构中移除对应的事件监控对象
+            channels_.erase(it);
         }
 
         // 开启监控并获取就绪数组
-        void startEpoll(std::vector<rs_channel::Channel::ptr> &channels)
+        int startEpoll(std::vector<rs_channel::Channel::ptr> &channels)
         {
             // 阻塞等待
             int nfds = epoll_wait(epfd_, epoll_events_.data(), max_ready_events, -1);
@@ -61,7 +63,7 @@ namespace rs_poller
             {
                 // 被中断打断，属于可接受范围
                 if(errno == EINTR)
-                    return;
+                    return 0;
                 LOG(Level::Error, "事件等待失败：{}", strerror(errno));
                 exit(static_cast<int>(rs_error::ErrorNum::Epoll_wait_fail));
             }
@@ -77,6 +79,8 @@ namespace rs_poller
                 channel->setReadyEvents(epoll_events_[i].events);
                 channels.emplace_back(channel);
             }
+
+            return nfds;
         }
 
     private:

@@ -21,8 +21,8 @@ namespace rs_channel
     public:
         using ptr = std::shared_ptr<Channel>;
 
-        Channel(std::shared_ptr<Poller> poller, int fd)
-            : fd_(fd), poller_(poller)
+        Channel(std::shared_ptr<rs_poller::Poller> poller, int fd)
+            : fd_(fd), poller_(poller), events_(0), revents_(0)
         {
         }
 
