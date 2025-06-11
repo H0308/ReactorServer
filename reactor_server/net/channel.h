@@ -6,18 +6,23 @@
 #include <sys/epoll.h>
 #include <memory>
 
+namespace rs_event_loop_lock_queue
+{
+    class EventLoopLockQueue;
+}
+
 namespace rs_channel
 {
     // 事件处理回调（参数后续设置）
     using event_callback_t = std::function<void()>;
 
-    class Channel
+    class Channel : public std::enable_shared_from_this<Channel>
     {
     public:
         using ptr = std::shared_ptr<Channel>;
 
-        Channel(int fd)
-            : fd_(fd), events_(0), revents_(0)
+        Channel(rs_event_loop_lock_queue::EventLoopLockQueue* loop, int fd)
+            : fd_(fd), events_(0), revents_(0), loop_(loop)
         {
         }
 
@@ -37,41 +42,46 @@ namespace rs_channel
         void enableConcerningReadFd()
         {
             events_ |= EPOLLIN;
-            // 待完善后续操作
+            update();
         }
 
         // 启用写事件关心
         void enableConcerningWriteFd()
         {
             events_ |= EPOLLOUT;
-            // 待完善后续操作
+            update();
         }
 
         // 关闭读事件关心
         void disableConcerningReadFd()
         {
             events_ &= ~EPOLLIN;
-            // 待完善后续操作
+            update();
         }
 
         // 关闭写事件
         void disableConcerningWriteFd()
         {
             events_ &= ~EPOLLOUT;
-            // 待完善后续操作
+            update();
         }
 
         // 关闭所有事件关心
         void disableConcerningAll()
         {
             events_ = 0;
+            update();
         }
 
         // 移动指定文件描述符关心
         void removeFd()
         {
             // 待完善具体操作
+            remove();
         }
+
+        void remove();
+        void update();
 
         // 根据具体时间调用对应的回调函数
         void handleEvent()
@@ -161,6 +171,7 @@ namespace rs_channel
 
         ~Channel()
         {
+            // Channel不负责EventLoop的生命周期，只是使用EventLoop
         }
 
     private:
@@ -173,6 +184,8 @@ namespace rs_channel
         event_callback_t error_cb_; // 错误事件回调
         event_callback_t close_cb_; // 连接断开事件回调
         event_callback_t any_cb_;   // 任意事件回调
+
+        rs_event_loop_lock_queue::EventLoopLockQueue* loop_;
     };
 }
 

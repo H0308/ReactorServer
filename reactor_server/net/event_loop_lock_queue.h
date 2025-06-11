@@ -3,8 +3,8 @@
 
 #include <sys/eventfd.h>
 #include <reactor_server/base/log.h>
-#include <reactor_server/net/poller.h>
 #include <reactor_server/net/channel.h>
+#include <reactor_server/net/poller.h>
 #include <reactor_server/base/error.h>
 
 namespace rs_event_loop_lock_queue
@@ -17,14 +17,16 @@ namespace rs_event_loop_lock_queue
     class EventLoopLockQueue
     {
     public:
+        using ptr = std::shared_ptr<EventLoopLockQueue>;
+
         EventLoopLockQueue()
             :thread_id_(std::this_thread::get_id()),
             event_fd_(getEventId()),
-            event_fd_channel_(std::make_shared<rs_channel::Channel>(event_fd_)),
+            event_fd_channel_(std::make_shared<rs_channel::Channel>(this, event_fd_)),
             poller_(std::make_shared<rs_poller::Poller>())
         {
             // 为事件通知描述符绑定回调函数，并启用可读事件监控
-            event_fd_channel_->setReadCallback(std::bind(EventLoopLockQueue::readEventId, this));
+            event_fd_channel_->setReadCallback(std::bind(&EventLoopLockQueue::readEventId, this));
             event_fd_channel_->enableConcerningReadFd();
         }
 
@@ -157,6 +159,16 @@ namespace rs_event_loop_lock_queue
         std::vector<task_t> tasks_; // 任务队列
         std::mutex tasks_mutex_; // 保护任务队列互斥锁
     };
+}
+
+void rs_channel::Channel::update()
+{
+    loop_->updateEvent(shared_from_this());
+}
+
+void rs_channel::Channel::remove()
+{
+    loop_->removeEvent(shared_from_this());
 }
 
 #endif
