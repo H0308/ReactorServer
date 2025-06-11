@@ -6,6 +6,7 @@
 #include <reactor_server/net/channel.h>
 #include <reactor_server/net/poller.h>
 #include <reactor_server/base/error.h>
+#include <reactor_server/net/timing_wheel.h>
 
 namespace rs_event_loop_lock_queue
 {
@@ -23,7 +24,8 @@ namespace rs_event_loop_lock_queue
             :thread_id_(std::this_thread::get_id()),
             event_fd_(getEventId()),
             event_fd_channel_(std::make_shared<rs_channel::Channel>(this, event_fd_)),
-            poller_(std::make_shared<rs_poller::Poller>())
+            poller_(std::make_shared<rs_poller::Poller>()),
+            timing_wheel_(std::make_shared<rs_timing_wheel::TimingWheel>(this))
         {
             // 为事件通知描述符绑定回调函数，并启用可读事件监控
             event_fd_channel_->setReadCallback(std::bind(&EventLoopLockQueue::readEventId, this));
@@ -86,6 +88,27 @@ namespace rs_event_loop_lock_queue
         void removeEvent(rs_channel::Channel::ptr channel)
         {
             poller_->removeEvent(channel);
+        }
+
+        void cancelTask(const std::string &id)
+        {
+            timing_wheel_->cancelTask(id);
+        }
+
+        void insertTask(const std::string &id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task)
+        {
+            timing_wheel_->insertTask(id, timeout, task);
+        }
+
+        void refreshTask(const std::string &id)
+        {
+            timing_wheel_->refreshTask(id);
+        }
+
+        // 非线程安全，使用时需要保证在同一线程内
+        bool hasTimer(const std::string &id)
+        {
+            return timing_wheel_->hasTimer(id);
         }
 
     private:
@@ -158,9 +181,12 @@ namespace rs_event_loop_lock_queue
         rs_poller::Poller::ptr poller_; // 事件监控模块
         std::vector<task_t> tasks_; // 任务队列
         std::mutex tasks_mutex_; // 保护任务队列互斥锁
+
+        rs_timing_wheel::TimingWheel::ptr timing_wheel_; // 时间轮
     };
 }
 
+// 分离实现Channel类中的函数
 void rs_channel::Channel::update()
 {
     loop_->updateEvent(shared_from_this());
@@ -169,6 +195,22 @@ void rs_channel::Channel::update()
 void rs_channel::Channel::remove()
 {
     loop_->removeEvent(shared_from_this());
+}
+
+// 分离实现TimingWheel中的函数
+void rs_timing_wheel::TimingWheel::cancelTask(const std::string &id)
+{
+    loop_->runTasks(std::bind(&TimingWheel::cancelTaskInLoop, this, id));
+}
+
+void rs_timing_wheel::TimingWheel::insertTask(const std::string &id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task)
+{
+    loop_->runTasks(std::bind(&TimingWheel::insertTaskInLoop, this, id, timeout, task));
+}
+
+void rs_timing_wheel::TimingWheel::refreshTask(const std::string &id)
+{
+    loop_->runTasks(std::bind(&TimingWheel::refreshTaskInLoop, this, id));
 }
 
 #endif

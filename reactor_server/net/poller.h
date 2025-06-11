@@ -50,6 +50,7 @@ namespace rs_poller
             if(it == channels_.end())
                 return;
             update(EPOLL_CTL_DEL, channel);
+            channels_.erase(channel->getFd());
         }
 
         // 开启监控并获取就绪数组

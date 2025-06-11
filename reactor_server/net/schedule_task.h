@@ -13,7 +13,7 @@ namespace schedule_task
         using main_task_t = std::function<void()>; // 主任务，具体任务类型未知，如果有任务，上层需要通过绑定设置参数
         using release_task_t = std::function<void()>; // 释放任务
 
-        ScheduleTask(uint64_t id, uint32_t timeout, const main_task_t &m_task)
+        ScheduleTask(const std::string &id, uint32_t timeout, const main_task_t &m_task)
             : id_(id), timeout_(timeout), m_task_(m_task), isCanceled(false)
         {
 
@@ -49,7 +49,7 @@ namespace schedule_task
         }
 
     private:
-        uint64_t id_; // 任务编号，统一分配，当前类中不决定id值
+        std::string id_; // 任务编号，统一分配，当前类中不决定id值
         uint32_t timeout_; // 超时时间
         main_task_t m_task_; // 主任务类型
         release_task_t r_task_; // 释放任务

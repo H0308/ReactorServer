@@ -8,7 +8,12 @@
 #include <reactor_server/base/log.h>
 #include <reactor_server/base/error.h>
 #include <reactor_server/net/schedule_task.h>
-#include <reactor_server/net/event_loop_lock_queue.h>
+#include <reactor_server/net/channel.h>
+
+namespace rs_event_loop_lock_queue
+{
+    class EventLoopLockQueue;
+}
 
 namespace rs_timing_wheel
 {
@@ -17,6 +22,7 @@ namespace rs_timing_wheel
     class TimingWheel
     {
     public:
+        using ptr = std::shared_ptr<TimingWheel>;
         using per_task_ptr_t = std::shared_ptr<schedule_task::ScheduleTask>;
         using per_task_ptr_t_weak = std::weak_ptr<schedule_task::ScheduleTask>;
 
@@ -29,20 +35,9 @@ namespace rs_timing_wheel
         }
 
         // 将时间轮的任务全部交给EventLoop来处理，确保任务可以在一个线程内执行保证线程安全问题
-        void cancelTask(uint64_t id)
-        {
-            loop_->runTasks(std::bind(&TimingWheel::cancelTaskInLoop, this, id));
-        }
-
-        void insertTask(uint64_t id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task)
-        {
-            loop_->runTasks(std::bind(&TimingWheel::insertTaskInLoop, this, id, timeout, task));
-        }
-
-        void refreshTask(uint64_t id)
-        {
-            loop_->runTasks(std::bind(&TimingWheel::refreshTaskInLoop, this, id));
-        }
+        void cancelTask(const std::string &id);
+        void insertTask(const std::string &id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task);
+        void refreshTask(const std::string &id);
 
         // 定时文件描述符可读事件触发回调
         void executeTimerTask()
@@ -51,9 +46,16 @@ namespace rs_timing_wheel
             runTasks();
         }
 
+        // 判断是否存在指定定时器
+        // 非线程安全，使用时需要保证在同一线程内
+        bool hasTimer(const std::string &id)
+        {
+            return static_cast<bool>(task_map_.count(id));
+        }
+
     private:
         // 直接从哈希表中删除对应的任务
-        void removeTask(uint64_t id)
+        void removeTask(std::string id)
         {
             auto pos = task_map_.find(id);
             if (pos == task_map_.end())
@@ -111,7 +113,7 @@ namespace rs_timing_wheel
         }
 
         // 取消任务
-        void cancelTaskInLoop(uint64_t id)
+        void cancelTaskInLoop(std::string id)
         {
             // 通过id找到对应的任务
             auto pos = task_map_.find(id);
@@ -124,7 +126,7 @@ namespace rs_timing_wheel
         }
 
         // 新增任务
-        void insertTaskInLoop(uint64_t id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task)
+        void insertTaskInLoop(const std::string &id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task)
         {
             // 构造任务对象
             per_task_ptr_t pt(new schedule_task::ScheduleTask(id, timeout, task));
@@ -135,7 +137,7 @@ namespace rs_timing_wheel
         }
 
         // 刷新定时任务
-        void refreshTaskInLoop(uint64_t id)
+        void refreshTaskInLoop(std::string id)
         {
             // 通过id找到对应的任务
             auto pos = task_map_.find(id);
@@ -153,7 +155,7 @@ namespace rs_timing_wheel
         int capacity_;                                               // 时间轮数组长度
         int tick_;                                                   // 当前待销毁（执行）的任务
         std::vector<std::vector<per_task_ptr_t>> schedule_tasks_;    // 时间轮数组
-        std::unordered_map<uint64_t, per_task_ptr_t_weak> task_map_; // 管理具体的一个任务，但是不能影响引用计数
+        std::unordered_map<std::string, per_task_ptr_t_weak> task_map_; // 管理具体的一个任务，但是不能影响引用计数
 
         int timerfd_;                                        // 定时器文件描述符
         rs_event_loop_lock_queue::EventLoopLockQueue *loop_; // 监控定时器文件描述符事件
