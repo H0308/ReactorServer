@@ -118,7 +118,7 @@ namespace rs_socket
         ssize_t send_block(const void *buf, size_t len, int flag = 0)
         {
             if(len == 0)
-                return ;
+                return 0;
             ssize_t ret = send(sockfd_, buf, len, flag);
             if(ret < 0)
             {

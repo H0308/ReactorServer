@@ -89,7 +89,7 @@ void testBasicServerOperations()
     std::cout << "等待客户端连接..." << std::endl;
 
     // 创建EventLoop进行对监听套接字进行监控
-    rs_event_loop_lock_queue::EventLoopLockQueue::EventLoopLockQueue::ptr loop = std::make_shared<rs_event_loop_lock_queue::EventLoopLockQueue>();
+    rs_event_loop_lock_queue::EventLoopLockQueue::ptr loop = std::make_shared<rs_event_loop_lock_queue::EventLoopLockQueue>();
     rs_channel::Channel::ptr listen_channel = std::make_shared<rs_channel::Channel>(loop.get(), server->getSockFd());
     // 设置监听套接字读事件的回调并启用监听套接字的读事件
     listen_channel->setReadCallback(std::bind(&handleAccept, listen_channel, server, loop.get()));

@@ -111,6 +111,12 @@ namespace rs_event_loop_lock_queue
             return timing_wheel_->hasTimer(id);
         }
 
+        // 断言判断是否在当前线程内
+        void assertInCurrentThread()
+        {
+            assert(std::this_thread::get_id() == thread_id_);
+        }
+
     private:
         // 判断当前是否在EventLoop所在线程
         bool isInCurrentThread()

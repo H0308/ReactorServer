@@ -82,6 +82,8 @@ namespace rs_buffer
         // 将data数据写入指定长度到缓冲区中
         void write_noMove(void *data, size_t len)
         {
+            if(len == 0)
+                return ;
             // 1. 确保空间足够
             setEnoughSpace(len);
             const char *data1 = static_cast<const char *>(data);
@@ -227,7 +229,8 @@ namespace rs_buffer
             else
             {
                 // 从写位置开始计算，此时写位置就代表当前已经占用的空间大小
-                buffer_.resize(write_idx_ + len);
+                // buffer_.resize(write_idx_ + len);
+                buffer_.resize(len);
             }
         }
 
