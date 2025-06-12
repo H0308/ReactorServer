@@ -234,6 +234,8 @@ namespace rs_buffer
         // 偏移读取指针
         void moveReadPtr(size_t len)
         {
+            if(len == 0)
+                return ;
             assert(len <= getReadableSize());
             read_idx_ += len;
         }

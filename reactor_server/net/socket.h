@@ -117,6 +117,8 @@ namespace rs_socket
         // 发送
         ssize_t send_block(const void *buf, size_t len, int flag = 0)
         {
+            if(len == 0)
+                return ;
             ssize_t ret = send(sockfd_, buf, len, flag);
             if(ret < 0)
             {
