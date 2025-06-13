@@ -113,13 +113,13 @@ namespace rs_buffer
         }
 
         // 写入其他缓冲区的数据——不移动写入指针
-        void write_noMove(const Buffer &data, size_t len)
+        void write_noMove(const Buffer &data)
         {
             write_noMove(data.getReadPos(), data.getReadableSize());
         }
 
         // 写入其他缓冲区的数据——移动写入指针
-        void write_move(const Buffer &data, size_t len)
+        void write_move(const Buffer &data)
         {
             write_move(data.getReadPos(), data.getReadableSize());
         }

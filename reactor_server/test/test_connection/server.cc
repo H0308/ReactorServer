@@ -55,6 +55,8 @@ void onMessage(const rs_connection::Connection::ptr &con, rs_buffer::Buffer &buf
     // 服务端返回响应
     const std::string data1 = "hello world";
     con->send((void *)(data1.c_str()), data1.size());
+
+    con->shutdown();
 }
 
 void onClose(const rs_connection::Connection::ptr &con)

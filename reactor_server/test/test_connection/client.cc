@@ -53,6 +53,7 @@ void testBasicClientOperations()
         else
         {
             std::cout << "❌ 接收服务器回复失败" << std::endl;
+            return;
         }
 
         sleep(1);

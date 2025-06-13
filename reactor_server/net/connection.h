@@ -52,7 +52,14 @@ namespace rs_connection
 
         void send(void *data, size_t len)
         {
-            event_loop_->runTasks(std::bind(&Connection::sendInLoop, this, data, len));
+            /**
+             * 因为runTasks可能只是将任务放入队列，并不是立即执行
+             * 这就可能出现后续执行sendInLoop时，data数据已经被销毁
+             * 此处构造一个新的buffer，在sendInLoop中使用参数的buffer再构造一个临时buffer用于数据转移到输出缓冲区
+             */
+            rs_buffer::Buffer buffer;
+            buffer.write_move(data, len);
+            event_loop_->runTasks(std::bind(&Connection::sendInLoop, this, buffer));
         }
 
         void shutdown()
@@ -135,13 +142,14 @@ namespace rs_connection
                 con_cb_(shared_from_this());
         }
 
-        void sendInLoop(void *data, size_t len)
+        // 使用传值调用确保临时对象的创建
+        void sendInLoop(rs_buffer::Buffer buffer)
         {
             // 该接口本身不发送数据，只是将数据放入写入缓冲区，启动读事件监控即可
             // 如果连接是待关闭状态就不再发送数据
             if (con_status_ == ConnectionStatus::Disconnecting)
                 return;
-            out_buffer_.write_move(data, len);
+            out_buffer_.write_move(buffer);
             if (!channel_->checkIsConcerningWriteFd())
                 channel_->enableConcerningWriteFd();
         }
