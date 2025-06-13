@@ -47,14 +47,14 @@ void onConnected(const rs_connection::Connection::ptr &con)
 void onMessage(const rs_connection::Connection::ptr &con, rs_buffer::Buffer &buf)
 {
     // 输出接收到的信息并向客户端返回数据
-    // const std::string data(buf.getReadPos(), buf.getReadableSize());
-    // LOG(Level::Debug, "服务端收到客户端消息：{}", data);
-    printf("客户端发送：%s", buf.getReadPos());
+    std::string data(reinterpret_cast<const char *>(buf.getReadPos()), buf.getReadableSize());
+    LOG(Level::Debug, "服务端收到客户端消息：{}", data);
+    // printf("客户端发送：%s", buf.getReadPos());
     buf.moveReadPtr(buf.getReadableSize());
 
     // 服务端返回响应
     const std::string data1 = "hello world";
-    con->send((void*)(data1.c_str()), data1.size());
+    con->send((void *)(data1.c_str()), data1.size());
 }
 
 void onClose(const rs_connection::Connection::ptr &con)

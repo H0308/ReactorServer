@@ -9,6 +9,8 @@
 
 namespace rs_connection
 {
+    using namespace log_system;
+
     // 连接状态
     enum class ConnectionStatus
     {
@@ -214,13 +216,16 @@ namespace rs_connection
             char buffer[65536] = {0};
             // 读取数据并放入到输入缓冲区中
             // 再将输入缓冲区中的数据交给消息回调处理
-            ssize_t ret = socket_->recv_nonBlock(buffer, sizeof(buffer) - 1);
+            ssize_t ret = socket_->recv_nonBlock(buffer, 65535);
             if (ret < 0)
             {
                 // 释放资源后关闭连接
                 shutdownInLoop();
                 return;
             }
+
+            // debug
+            // LOG(Level::Debug, "收到数据大小：{}", ret);
 
             // 写入数据到输入缓冲区
             // 读取为0依旧当做有数据处理，只是写入的数据大小为0

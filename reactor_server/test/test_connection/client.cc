@@ -58,10 +58,7 @@ void testBasicClientOperations()
         sleep(1);
     }
 
-    while (true)
-    {
-        sleep(1);
-    }
+    sleep(20);
     
     std::cout << "客户端基本操作测试完成" << std::endl;
 }

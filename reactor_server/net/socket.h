@@ -59,7 +59,7 @@ namespace rs_socket
 
             if (ret < 0)
             {
-                LOG(Level::Error, "绑定失败");
+                LOG(Level::Error, "绑定失败：{}", strerror(errno));
                 return false;
             }
 
@@ -134,7 +134,7 @@ namespace rs_socket
         // 发送
         ssize_t send_nonBlock(void *buf, size_t len)
         {
-            return send_block(buf, len, 1);
+            return send_block(buf, len, MSG_DONTWAIT);
         }
 
         // 接收
@@ -158,9 +158,9 @@ namespace rs_socket
             return ret;
         }
 
-        bool recv_nonBlock(void *buf, size_t len)
+        ssize_t recv_nonBlock(void *buf, size_t len)
         {
-            return recv_block(buf, len, 1);
+            return recv_block(buf, len, MSG_DONTWAIT);
         }
 
         // 关闭套接字
