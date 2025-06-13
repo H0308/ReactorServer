@@ -11,6 +11,8 @@ namespace rs_loop_thread
     class LoopThread
     {
     public:
+        using ptr = std::shared_ptr<LoopThread>;
+
         LoopThread()
             : thread_(std::thread(std::bind(&LoopThread::threadEntry, this))), loop_(nullptr)
         {
