@@ -95,7 +95,7 @@ namespace rs_event_loop_lock_queue
             timing_wheel_->cancelTask(id);
         }
 
-        void insertTask(const std::string &id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task)
+        void insertTask(const std::string &id, uint32_t timeout, const rs_schedule_task::ScheduleTask::main_task_t &task)
         {
             timing_wheel_->insertTask(id, timeout, task);
         }
@@ -209,7 +209,7 @@ void rs_timing_wheel::TimingWheel::cancelTask(const std::string &id)
     loop_->runTasks(std::bind(&TimingWheel::cancelTaskInLoop, this, id));
 }
 
-void rs_timing_wheel::TimingWheel::insertTask(const std::string &id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task)
+void rs_timing_wheel::TimingWheel::insertTask(const std::string &id, uint32_t timeout, const rs_schedule_task::ScheduleTask::main_task_t &task)
 {
     loop_->runTasks(std::bind(&TimingWheel::insertTaskInLoop, this, id, timeout, task));
 }

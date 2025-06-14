@@ -10,7 +10,7 @@ namespace rs_loop_thread_pool
     public:
         using ptr = std::shared_ptr<LoopThreadPool>;
 
-        LoopThreadPool(rs_event_loop_lock_queue::EventLoopLockQueue *loop)
+        LoopThreadPool(rs_event_loop_lock_queue::EventLoopLockQueue::ptr loop)
             : base_loop_(loop), thread_num_(0), next_loop_(0)
         {
         }
@@ -40,14 +40,14 @@ namespace rs_loop_thread_pool
         rs_event_loop_lock_queue::EventLoopLockQueue::ptr getNextLoop()
         {
             if (thread_num_ == 0)
-                return std::shared_ptr<rs_event_loop_lock_queue::EventLoopLockQueue>(base_loop_);
+                return base_loop_;
             return loops_[(next_loop_++) % thread_num_];
         }
 
     private:
         int thread_num_;                                                       // 线程个数
         int next_loop_;                                                        // 下一个从属事件循环监控
-        rs_event_loop_lock_queue::EventLoopLockQueue *base_loop_;              // 主事件循环监控
+        rs_event_loop_lock_queue::EventLoopLockQueue::ptr base_loop_;              // 主事件循环监控
         std::vector<rs_loop_thread::LoopThread::ptr> loop_threads_;            // 管理所有的线程事件监控
         std::vector<rs_event_loop_lock_queue::EventLoopLockQueue::ptr> loops_; // 管理所有的事件循环监控
     };

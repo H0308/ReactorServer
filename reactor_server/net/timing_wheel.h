@@ -23,8 +23,8 @@ namespace rs_timing_wheel
     {
     public:
         using ptr = std::shared_ptr<TimingWheel>;
-        using per_task_ptr_t = std::shared_ptr<schedule_task::ScheduleTask>;
-        using per_task_ptr_t_weak = std::weak_ptr<schedule_task::ScheduleTask>;
+        using per_task_ptr_t = std::shared_ptr<rs_schedule_task::ScheduleTask>;
+        using per_task_ptr_t_weak = std::weak_ptr<rs_schedule_task::ScheduleTask>;
 
         TimingWheel(rs_event_loop_lock_queue::EventLoopLockQueue *loop)
             : capacity_(60), tick_(0), schedule_tasks_(capacity_), timerfd_(getTimerFd()), loop_(loop), timerfd_channel(std::make_shared<rs_channel::Channel>(loop_, timerfd_))
@@ -36,7 +36,7 @@ namespace rs_timing_wheel
 
         // 将时间轮的任务全部交给EventLoop来处理，确保任务可以在一个线程内执行保证线程安全问题
         void cancelTask(const std::string &id);
-        void insertTask(const std::string &id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task);
+        void insertTask(const std::string &id, uint32_t timeout, const rs_schedule_task::ScheduleTask::main_task_t &task);
         void refreshTask(const std::string &id);
 
         // 定时文件描述符可读事件触发回调
@@ -126,10 +126,10 @@ namespace rs_timing_wheel
         }
 
         // 新增任务
-        void insertTaskInLoop(const std::string &id, uint32_t timeout, const schedule_task::ScheduleTask::main_task_t &task)
+        void insertTaskInLoop(const std::string &id, uint32_t timeout, const rs_schedule_task::ScheduleTask::main_task_t &task)
         {
             // 构造任务对象
-            per_task_ptr_t pt(new schedule_task::ScheduleTask(id, timeout, task));
+            per_task_ptr_t pt(new rs_schedule_task::ScheduleTask(id, timeout, task));
             pt->setReleaseTask(std::bind(&TimingWheel::removeTask, this, id));
             int pos = (tick_ + timeout) % capacity_;
             schedule_tasks_[pos].push_back(pt);

@@ -36,8 +36,7 @@ namespace rs_acceptor
 
     private:
         // 处理有新连接的回调函数
-        void
-        handleAccept()
+        void handleAccept()
         {
             // 获取新连接并交给上层处理
             int newfd = socket_->accept();

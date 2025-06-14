@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <functional>
 
-namespace schedule_task
+namespace rs_schedule_task
 {
     // 定时任务类型
     class ScheduleTask
