@@ -94,7 +94,7 @@ namespace rs_poller
             if(ret < 0)
             {
                 LOG(Level::Error, "添加文件描述符监控失败");
-                exit(static_cast<int>(rs_error::ErrorNum::Epoll_ctl_fail));
+                // exit(static_cast<int>(rs_error::ErrorNum::Epoll_ctl_fail));
             }
         }
 

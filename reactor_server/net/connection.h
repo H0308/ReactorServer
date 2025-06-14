@@ -147,7 +147,7 @@ namespace rs_connection
         {
             // 该接口本身不发送数据，只是将数据放入写入缓冲区，启动读事件监控即可
             // 如果连接是待关闭状态就不再发送数据
-            if (con_status_ == ConnectionStatus::Disconnecting)
+            if (con_status_ == ConnectionStatus::Disconnected)
                 return;
             out_buffer_.write_move(buffer);
             if (!channel_->checkIsConcerningWriteFd())

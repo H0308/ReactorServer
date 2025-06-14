@@ -168,6 +168,8 @@ namespace rs_socket
         {
             if(sockfd_ > 0)
                 ::close(sockfd_);
+
+            sockfd_ = -1;
         }
 
         // 创建一个客户端
