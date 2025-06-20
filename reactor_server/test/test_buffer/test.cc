@@ -100,7 +100,7 @@ void testBufferToBuffer()
     buf1.write_move((void *)testData, dataLen);
 
     // 从buf1复制到buf2
-    buf2.write_move(buf1, dataLen);
+    buf2.write_move(buf1);
 
     // 验证buf2中的数据
     char readBuffer[20] = {0};
