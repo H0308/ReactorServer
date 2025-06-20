@@ -19,7 +19,7 @@ namespace rs_loop_thread
 
         }
 
-        rs_event_loop_lock_queue::EventLoopLockQueue::ptr getLoop()
+        rs_event_loop_lock_queue::EventLoopLockQueue* getLoop()
         {
             rs_event_loop_lock_queue::EventLoopLockQueue::ptr loop;
             {
@@ -31,7 +31,7 @@ namespace rs_loop_thread
                 loop = loop_;
             }
 
-            return loop;
+            return loop.get();
         }
     private:
         void threadEntry()
@@ -44,7 +44,7 @@ namespace rs_loop_thread
                 loop_con_.notify_all();
             }
 
-            loop->startEventLoop();
+            loop_->startEventLoop();
         }
 
     private:

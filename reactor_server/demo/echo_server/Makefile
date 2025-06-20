@@ -2,6 +2,7 @@ CC=g++
 CFLAGS=-std=c++17
 INCLUDES=-I/home/epsda/ReactorServer/
 LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system -fsanitize=address -g
+# LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system
 
 # 主要目标
 # all: server client

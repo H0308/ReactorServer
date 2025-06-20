@@ -151,7 +151,7 @@ namespace rs_socket
             else if (ret == 0)
             {
                 // 对端正常关闭连接
-                LOG(Level::Info, "客户端断开连接");
+                // LOG(Level::Info, "客户端断开连接");
                 return -1;
             }
 

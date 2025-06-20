@@ -33,8 +33,8 @@ namespace rs_connection
         // 任意事件回调
         using anyEventCallback_t = std::function<void(const Connection::ptr &)>;
 
-        Connection(rs_event_loop_lock_queue::EventLoopLockQueue::ptr loop, const std::string &id, int fd)
-            : fd_(fd), id_(id), event_loop_(loop), socket_(std::make_shared<rs_socket::Socket>(fd)), channel_(std::make_shared<rs_channel::Channel>(event_loop_.get(), fd_)), con_status_(ConnectionStatus::Connecting), enable_timeout_release_(false)
+        Connection(rs_event_loop_lock_queue::EventLoopLockQueue *loop, const std::string &id, int fd)
+            : fd_(fd), id_(id), event_loop_(loop), socket_(std::make_shared<rs_socket::Socket>(fd)), channel_(std::make_shared<rs_channel::Channel>(event_loop_, fd_)), con_status_(ConnectionStatus::Connecting), enable_timeout_release_(false)
         {
             // 设置回调给Channel，但是不启动读事件监控，确保定时任务可以正常使用
             // 防止出现定时任务没有启动之前有读事件发生，此时不存在定时任务导致错误刷新任务
@@ -82,6 +82,11 @@ namespace rs_connection
             event_loop_->assertInCurrentThread();
             // 必须保证协议切换是在同一线程下执行，防止后续使用新协议数据无法被正确解析
             event_loop_->runTasks(std::bind(&Connection::switchProtocolInLoop, this, context, con_cb, msg_cb, close_cb, any_cb));
+        }
+
+        void release()
+        {
+            event_loop_->runTasks(std::bind(&Connection::releaseInLoop, this));
         }
 
         void setConnectedCallback(const connectedCallback_t &cb)
@@ -154,10 +159,16 @@ namespace rs_connection
                 channel_->enableConcerningWriteFd();
         }
 
-        void release()
+        void releaseInLoop()
         {
             // 1. 更改连接状态为连接断开
             con_status_ = ConnectionStatus::Disconnected;
+            // 2. 清空Channel的所有回调函数，防止悬空指针访问
+            channel_->setReadCallback(nullptr);
+            channel_->setWriteCallback(nullptr);
+            channel_->setCloseCallback(nullptr);
+            channel_->setErrorCallback(nullptr);
+            channel_->setAnyCallback(nullptr);
             // 2. 关闭文件描述符事件监控并移除文件描述符
             channel_->disableConcerningAll();
             channel_->removeFd();
@@ -185,7 +196,7 @@ namespace rs_connection
                 msg_cb_(shared_from_this(), in_buffer_);
             // 3. 如果输出缓冲区有数据则启用写监控发送数据
             if (out_buffer_.getReadableSize() > 0)
-                if (channel_->checkIsConcerningWriteFd())
+                if (!channel_->checkIsConcerningWriteFd())
                     channel_->enableConcerningWriteFd();
             // 4. 释放连接
             release();
@@ -221,6 +232,14 @@ namespace rs_connection
         // 提供给Channel模块的回调函数
         void handleRead()
         {
+            // 保护当前对象生命周期，防止在处理过程中被释放
+            auto self = shared_from_this();
+
+            // 检查连接状态，如果已经断开则不处理
+            if (con_status_ == ConnectionStatus::Disconnected ||
+                con_status_ == ConnectionStatus::Disconnecting)
+                return;
+
             char buffer[65536] = {0};
             // 读取数据并放入到输入缓冲区中
             // 再将输入缓冲区中的数据交给消息回调处理
@@ -245,6 +264,11 @@ namespace rs_connection
 
         void handleWrite()
         {
+            auto self = shared_from_this();
+
+            if (con_status_ == ConnectionStatus::Disconnected)
+                return;
+
             // 将输出缓冲区中的数据进行发送
             ssize_t ret = socket_->send_nonBlock(out_buffer_.getReadPos(), out_buffer_.getReadableSize());
             if (ret < 0)
@@ -270,6 +294,8 @@ namespace rs_connection
 
         void handleClose()
         {
+            auto self = shared_from_this();
+
             // 判断输入缓冲区是否还有数据需要处理
             if (in_buffer_.getReadableSize() > 0)
                 if (msg_cb_)
@@ -280,11 +306,19 @@ namespace rs_connection
 
         void handleError()
         {
+            auto self = shared_from_this();
+
             handleClose();
         }
 
         void handleAny()
         {
+            // 检查对象是否已经被释放
+            if (con_status_ == ConnectionStatus::Disconnected)
+                return;
+
+            auto self = shared_from_this();
+            
             // 判断是否启用连接超时释放
             if (enable_timeout_release_)
                 event_loop_->refreshTask(id_);
@@ -295,16 +329,16 @@ namespace rs_connection
         }
 
     private:
-        std::string id_;                                               // 连接ID，同时也是定时任务ID
-        int fd_;                                                       // 管理的文件描述符
-        rs_socket::Socket::ptr socket_;                                // 套接字管理结构
-        rs_event_loop_lock_queue::EventLoopLockQueue::ptr event_loop_; // 事件监控模块
-        rs_channel::Channel::ptr channel_;                             // 事件管理模块
-        rs_buffer::Buffer in_buffer_;                                  // 输入缓冲区
-        rs_buffer::Buffer out_buffer_;                                 // 输出缓冲区
-        std::any context_;                                             // 协议上下文管理
-        ConnectionStatus con_status_;                                  // 连接状态
-        bool enable_timeout_release_;                                  // 连接超时释放标记
+        std::string id_;                                           // 连接ID，同时也是定时任务ID
+        int fd_;                                                   // 管理的文件描述符
+        rs_socket::Socket::ptr socket_;                            // 套接字管理结构
+        rs_event_loop_lock_queue::EventLoopLockQueue *event_loop_; // 事件监控模块
+        rs_channel::Channel::ptr channel_;                         // 事件管理模块
+        rs_buffer::Buffer in_buffer_;                              // 输入缓冲区
+        rs_buffer::Buffer out_buffer_;                             // 输出缓冲区
+        std::any context_;                                         // 协议上下文管理
+        ConnectionStatus con_status_;                              // 连接状态
+        bool enable_timeout_release_;                              // 连接超时释放标记
 
         connectedCallback_t con_cb_;
         messageCallback_t msg_cb_;

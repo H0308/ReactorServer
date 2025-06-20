@@ -111,7 +111,7 @@ namespace rs_channel
                 if (error_cb_)
                     error_cb_();
             }
-            if (revents_ & EPOLLHUP)
+            else if (revents_ & EPOLLHUP)
             {
                 // 任意事件回调
                 if (any_cb_)

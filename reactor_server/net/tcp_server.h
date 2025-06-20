@@ -15,7 +15,7 @@ namespace rs_tcp_server
     {
     public:
         TcpServer(int port)
-            : thread_num_(0), enable_timeout_release_(false), base_loop_(std::make_shared<rs_event_loop_lock_queue::EventLoopLockQueue>()), acceptor_(std::make_shared<rs_acceptor::Acceptor>(base_loop_, port)), loop_pool_(std::make_shared<rs_loop_thread_pool::LoopThreadPool>(base_loop_))
+            : thread_num_(0), enable_timeout_release_(false), base_loop_(std::make_shared<rs_event_loop_lock_queue::EventLoopLockQueue>()), acceptor_(std::make_shared<rs_acceptor::Acceptor>(base_loop_.get(), port)), loop_pool_(std::make_shared<rs_loop_thread_pool::LoopThreadPool>(base_loop_.get()))
         {
             acceptor_->setAcceptCallback(std::bind(&TcpServer::handleAccept, this, std::placeholders::_1));
             acceptor_->enableConcerningAcceptFd();

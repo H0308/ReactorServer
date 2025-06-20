@@ -17,7 +17,7 @@ namespace echo_server
             server_.setMessageCallback(std::bind(&EchoServer::onMessage, this, std::placeholders::_1, std::placeholders::_2));
             server_.setOuterCloseCallback(std::bind(&EchoServer::onClose, this, std::placeholders::_1));
             server_.enableTimeoutRelease(10);
-            server_.setThreadNum(2);
+            server_.setThreadNum(5);
         }
 
         void start()
@@ -36,7 +36,7 @@ namespace echo_server
         {
             // 输出接收到的信息并向客户端返回数据
             std::string data(reinterpret_cast<const char *>(buf.getReadPos()), buf.getReadableSize());
-            LOG(Level::Debug, "服务端收到客户端消息：{}", data);
+            // LOG(Level::Debug, "服务端收到客户端消息：{}", data);
             // printf("客户端发送：%s", buf.getReadPos());
             buf.moveReadPtr(buf.getReadableSize());
 

@@ -172,7 +172,7 @@ namespace rs_event_loop_lock_queue
             std::vector<task_t> tasks;
             {
                 std::unique_lock<std::mutex> lock(tasks_mutex_);
-                std::swap(tasks, tasks_);
+                tasks_.swap(tasks);
             }
 
             std::for_each(tasks.begin(), tasks.end(), [](const task_t &task){

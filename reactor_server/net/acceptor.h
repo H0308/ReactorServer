@@ -18,8 +18,8 @@ namespace rs_acceptor
         // 连接文件描述符处理回调
         using acceptCallback_t = std::function<void(int)>;
 
-        Acceptor(rs_event_loop_lock_queue::EventLoopLockQueue::ptr loop, int port)
-            : loop_(loop), channel_(std::make_shared<rs_channel::Channel>(loop_.get(), getAcceptFd(port)))
+        Acceptor(rs_event_loop_lock_queue::EventLoopLockQueue* loop, int port)
+            : loop_(loop), channel_(std::make_shared<rs_channel::Channel>(loop_, getAcceptFd(port)))
         {
             channel_->setReadCallback(std::bind(&Acceptor::handleAccept, this));
         }
@@ -55,7 +55,7 @@ namespace rs_acceptor
 
     private:
         rs_socket::Socket::ptr socket_;                          // 套接字操作
-        rs_event_loop_lock_queue::EventLoopLockQueue::ptr loop_; // 监听套接字描述符事件监控
+        rs_event_loop_lock_queue::EventLoopLockQueue* loop_; // 监听套接字描述符事件监控
         rs_channel::Channel::ptr channel_;                       // 监听套接字描述符事件管理
 
         acceptCallback_t ac_cb_;
