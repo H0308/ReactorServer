@@ -59,7 +59,7 @@ namespace rs_connection
              */
             rs_buffer::Buffer buffer;
             buffer.write_move(data, len);
-            event_loop_->runTasks(std::bind(&Connection::sendInLoop, this, buffer));
+            event_loop_->runTasks(std::bind(&Connection::sendInLoop, this, std::move(buffer)));
         }
 
         void shutdown()
@@ -198,8 +198,10 @@ namespace rs_connection
             if (out_buffer_.getReadableSize() > 0)
                 if (!channel_->checkIsConcerningWriteFd())
                     channel_->enableConcerningWriteFd();
-            // 4. 释放连接
-            release();
+            // 4. 在输出缓冲区没有数据之后再释放，而不是直接释放连接
+            // 如果不进行缓冲区数据是否存在判定就会出现有数据也会直接释放而不会触发数据发送
+            if(out_buffer_.getReadableSize() == 0)
+                release();
         }
 
         void enableTimeoutReleaseInLoop(uint32_t timeout)

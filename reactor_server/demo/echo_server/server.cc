@@ -1,3 +1,4 @@
+#include <reactor_server/net/signal_ign.h>
 #include <reactor_server/demo/echo_server/echo_server.h>
 
 using namespace log_system;

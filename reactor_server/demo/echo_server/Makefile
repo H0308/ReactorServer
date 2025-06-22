@@ -1,8 +1,8 @@
 CC=g++
-CFLAGS=-std=c++17
+CFLAGS=-std=c++17 -O3 -DNDEBUG -march=native -flto=auto
 INCLUDES=-I/home/epsda/ReactorServer/
-LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system -fsanitize=address -g
-# LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system
+# LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system -fsanitize=address -g -flto=auto
+LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system -flto=auto
 
 # 主要目标
 # all: server client

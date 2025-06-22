@@ -35,12 +35,13 @@ namespace echo_server
         void onMessage(const rs_connection::Connection::ptr &con, rs_buffer::Buffer &buf)
         {
             // 输出接收到的信息并向客户端返回数据
-            std::string data(reinterpret_cast<const char *>(buf.getReadPos()), buf.getReadableSize());
+            // std::string data(reinterpret_cast<const char *>(buf.getReadPos()), buf.getReadableSize());
             // LOG(Level::Debug, "服务端收到客户端消息：{}", data);
             // printf("客户端发送：%s", buf.getReadPos());
-            buf.moveReadPtr(buf.getReadableSize());
 
-            con->send((void *)(data.c_str()), data.size());
+            con->send(buf.getReadPos(), buf.getReadableSize());
+            buf.moveReadPtr(buf.getReadableSize());
+            con->shutdown();
         }
 
         void onClose(const rs_connection::Connection::ptr &con)
