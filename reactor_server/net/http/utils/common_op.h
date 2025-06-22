@@ -4,9 +4,12 @@
 #include <string>
 #include <vector>
 #include <string_view>
+#include <reactor_server/base/log.h>
 
 namespace rs_common_op
 {
+    using namespace log_system;
+
     class CommonOp
     {
     public:
@@ -40,6 +43,49 @@ namespace rs_common_op
                 out.push_back(std::string(line.substr(pos)));
 
             return out.size();
+        }
+
+        // 资源有效路径检查
+        // 遇到前往上一级的标记就对目录层级进行减一，否则加一，任意一次目录层级减少到负数就返回假
+        // 否则返回真
+        static bool isValidResourcePath(const std::string &path)
+        {
+            if(path.size() == 0)
+            {
+                LOG(Level::Warning, "资源路径为空，检查失败");
+                return false;
+            }
+
+            // 分割路径
+            std::vector<std::string> out;
+            std::string sep = "/";
+            bool ret = split(out, path, sep);
+            if(!ret)
+            {
+                LOG(Level::Warning, "资源路径检查失败，路径分割失败");
+                return false;
+            }
+
+            int level = 0;
+
+            for(auto &str : out)
+            {
+                if(str == "..")
+                {
+                    level--;
+                    if (level < 0)
+                    {
+                        LOG(Level::Warning, "资源路径无效");
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                level++;
+            }
+
+            return true;
         }
     };
 }
