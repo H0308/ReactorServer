@@ -65,6 +65,7 @@
         "variant": "cpp",
         "source_location": "cpp",
         "any": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "fstream": "cpp"
     }
 }

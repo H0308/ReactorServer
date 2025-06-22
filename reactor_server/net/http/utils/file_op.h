@@ -68,6 +68,12 @@ namespace rs_file_op
         {
             return std::filesystem::is_regular_file(filepath);
         }
+
+        // 获取文件扩展名
+        static std::string getExtensionName(const std::filesystem::path &filepath)
+        {
+            return filepath.extension().string();
+        }
     };
 }
 
