@@ -119,7 +119,7 @@ namespace rs_http_request
             body_ = b;
         }
 
-        std::string getBody()
+        std::string &getBody()
         {
             return body_;
         }
