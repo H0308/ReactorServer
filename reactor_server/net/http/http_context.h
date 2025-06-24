@@ -63,6 +63,13 @@ namespace rs_http_context
             }
         }
 
+        void clear()
+        {
+            response_status_ = 200;
+            recv_status_ = ReqRecvStatus::RecvLine;
+            request_.clear();
+        }
+
     private:
         // 处理缓冲区中关于请求行的数据
         // 确保缓冲区数据存在一行数据，并且该数据不会过大
@@ -112,8 +119,9 @@ namespace rs_http_context
             // std::regex expr(R"((GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT) (/[^?]*)(\?(.*))* (HTTP/1.[01])(?:\r\n|\n)?)");
             // 但是上面的写法会有问题，当满足的字符串不存在时，(.*)与()*会产生两个空的捕获组
             // 所以可以使用(?:...)去掉外部的捕获组
+            // 使用std::regex::icase选项忽略大小写
             std::regex expr(
-                R"((GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT) (/[^?]*)(?:\?(.*))* (HTTP/1.[01])(?:\r\n|\n)?)");
+                R"((GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE|CONNECT) (/[^?]*)(?:\?(.*))* (HTTP/1.[01])(?:\r\n|\n)?)", std::regex::icase);
 
             std::smatch results;
             if (!std::regex_match(line, results, expr))
@@ -137,7 +145,10 @@ namespace rs_http_context
             }
 
             // 设置属性
-            request_.setMethod(matches[1].str());
+            std::string method = matches[1].str();
+            // 将请求方式全部修改为大写字母
+            std::transform(method.begin(), method.end(), method.begin(), ::toupper);
+            request_.setMethod(method);
             std::string decode_path;
             // 路径部分并没有规定空格转加号
             rs_url_op::UrlOp::urlDecode(decode_path, matches[2].str());

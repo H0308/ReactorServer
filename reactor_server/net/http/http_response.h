@@ -3,6 +3,9 @@
 
 #include <string>
 #include <unordered_map>
+#include <sstream>
+#include <reactor_server/net/http/http_request.h>
+#include <reactor_server/net/http/utils/info_get.h>
 
 namespace rs_http_response
 {
@@ -104,6 +107,25 @@ namespace rs_http_response
             redirect_url_.clear();
             body_.clear();
             headers_.clear();
+        }
+
+        std::string constructHttpResponseStr(rs_http_request::HttpRequest &req)
+        {
+            // 构建响应行
+            std::stringstream resp_str;
+            resp_str << req.getVersion() << " " << std::to_string(status_) << rs_info_get::InfoGet::getStatusDesc(status_) << "\r\n";
+
+            // 构建响应头
+            std::for_each(headers_.begin(), headers_.end(), [&](std::pair<std::string, std::string> &p){
+                resp_str << p.first << ": " << p.second << "\r\n";
+            });
+
+            resp_str << "\r\n";
+
+            // 构建响应体
+            resp_str << body_;
+
+            return resp_str.str();
         }
     private:
         int status_; // 响应状态码

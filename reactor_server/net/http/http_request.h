@@ -4,12 +4,19 @@
 #include <regex>
 #include <string>
 #include <unordered_map>
+#include <filesystem>
 
 namespace rs_http_request
 {
     class HttpRequest
     {
     public:
+        HttpRequest()
+            :version_("HTTP/1.1")
+        {
+
+        }
+
         void setHeader(const std::string &key, const std::string &value)
         {
             headers_[key] = value;
@@ -64,20 +71,18 @@ namespace rs_http_request
         void clear()
         {
             method_.clear();
-            version_.clear();
+            version_ = "HTTP/1.1";
             path_.clear();
             body_.clear();
             headers_.clear();
             params_.clear();
-            std::smatch matches;
-            matches_.swap(matches);
         }
 
         size_t getContentLength()
-        { 
-            if(!isInHeaders("Content-Length"))
+        {
+            if (!isInHeaders("Content-Length"))
                 return 0;
-            
+
             return std::stol(headers_["Content-Length"]);
         }
 
@@ -85,7 +90,7 @@ namespace rs_http_request
         {
             if (isInHeaders("Connection") && headers_["Connection"] == "keep-alive")
                 return true;
-                
+
             return false;
         }
 
@@ -99,7 +104,7 @@ namespace rs_http_request
             path_ = p;
         }
 
-        std::string getPath()
+        std::filesystem::path getPath()
         {
             return path_;
         }
@@ -126,9 +131,8 @@ namespace rs_http_request
 
     private:
         std::string method_;                                   // 请求方法
-        std::string path_;                                     // 请求资源路径
+        std::filesystem::path path_;                           // 请求资源路径
         std::string version_;                                  // 协议版本
-        std::smatch matches_;                                  // 请求行解析结果集
         std::unordered_map<std::string, std::string> headers_; // 请求头
         std::unordered_map<std::string, std::string> params_;  // 请求参数
         std::string body_;                                     // 请求体
