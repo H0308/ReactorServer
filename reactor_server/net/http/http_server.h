@@ -32,22 +32,25 @@ namespace rs_http_server
         // 设置GET请求处理映射
         void setGetHandler(const std::string &reg, const handler_t &handler)
         {
-            
+            get_mapping_.emplace_back(reg, handler);
         }
 
         // 设置POST请求处理映射
         void setPostHandler(const std::string &reg, const handler_t &handler)
         {
+            post_mapping_.emplace_back(reg, handler);
         }
 
         // 设置PUT请求处理映射
         void setPutHandler(const std::string &reg, const handler_t &handler)
         {
+            put_mapping_.emplace_back(reg, handler);
         }
 
         // 设置DELETE请求处理映射
         void setDeleteHandler(const std::string &reg, const handler_t &handler)
         {
+            delete_mapping_.emplace_back(reg, handler);
         }
 
         // 设置根目录
