@@ -1,0 +1,42 @@
+#include <reactor_server/net/signal_ign.h>
+#include <reactor_server/net/http/http_server.h>
+
+using namespace log_system;
+
+const std::string default_base_dir = "./wwwroot";
+
+void getHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)
+{
+    LOG(Level::Info, "收到GET请求");
+}
+
+void postHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)
+{
+    LOG(Level::Info, "收到POST请求");
+}
+
+void putHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)
+{
+    LOG(Level::Info, "收到PUT请求");
+}
+
+void deleteHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)
+{
+    LOG(Level::Info, "收到DELETE请求");
+}
+
+int main()
+{
+    ENABLE_CONSOLE_LOG();
+
+    rs_http_server::HttpServer server(8080);
+    server.setThreadNum(3);
+    server.setBaseDir(default_base_dir);
+    server.setGetHandler("/get", getHandler);
+    server.setPostHandler("/post", postHandler);
+    server.setPutHandler("/put", putHandler);
+    server.setDeleteHandler("/delete", deleteHandler);
+    server.startServer();
+
+    return 0;
+}

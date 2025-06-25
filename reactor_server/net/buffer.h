@@ -115,13 +115,13 @@ namespace rs_buffer
         // 写入其他缓冲区的数据——不移动写入指针
         void write_noMove(const Buffer &data)
         {
-            write_noMove(data.getReadPos(), data.getReadableSize());
+            write_noMove((void*)(data.getReadPos()), data.getReadableSize());
         }
 
         // 写入其他缓冲区的数据——移动写入指针
         void write_move(const Buffer &data)
         {
-            write_move(data.getReadPos(), data.getReadableSize());
+            write_move((void*)(data.getReadPos()), data.getReadableSize());
         }
 
         // 读取任意数据——不移动指针
@@ -208,7 +208,7 @@ namespace rs_buffer
         }
 
         // 确定是否存在指定空间大小
-        void setEnoughSpace(size_t len)
+        void setEnoughSpace(uint64_t len)
         {
             // 三种情况：
             // 1. 需要的空间大小小于写位置之后的空间大小，说明空间足够，函数不进行任何行为
@@ -224,13 +224,15 @@ namespace rs_buffer
                 char *start_pos = getReadPos();
                 // 挪动数据
                 uint64_t readable_size = getReadableSize();
-                std::copy(start_pos, start_pos + readable_size, buffer_.begin());
+                std::copy(start_pos, start_pos + readable_size, getStartPos());
+                // 重置索引
+                read_idx_ = 0;
+                write_idx_ = readable_size;
             }
             else
             {
                 // 从写位置开始计算，此时写位置就代表当前已经占用的空间大小
-                // buffer_.resize(write_idx_ + len);
-                buffer_.resize(len);
+                buffer_.resize(write_idx_ + len);
             }
         }
 
@@ -246,8 +248,8 @@ namespace rs_buffer
         // 偏移写入指针
         void moveWritePtr(size_t len)
         {
-            // 只判断后方是否有足够空间
-            assert(len <= getBackWritableSize());
+            // 确保移动后不会超出buffer边界
+            assert(write_idx_ + len <= buffer_.size());
             write_idx_ += len;
         }
 
