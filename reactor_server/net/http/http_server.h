@@ -56,6 +56,7 @@ namespace rs_http_server
         // 设置根目录
         void setBaseDir(const std::filesystem::path &path)
         {
+            assert(rs_file_op::FileOp::isDirectory(path));
             base_dir_ = path;
         }
 
@@ -77,8 +78,15 @@ namespace rs_http_server
         {
             std::filesystem::path req_path = req.getPath();
             std::filesystem::path real_path = base_dir_ / req_path;
+            // 如果请求路径为/，则直接返回根目录
+            // 当右操作数是绝对路径时（以/开头），它会替换左操作数，而不是拼接。这是std::filesystem::path的标准行为
+            if(req_path.string() == "/")
+                real_path = base_dir_.string() + "/";
+            else if (!req_path.empty() && req_path.string()[0] == '/')
+                real_path = base_dir_.string() + req_path.string();
             if (real_path.string().back() == '/')
                 real_path /= "index.html";
+            LOG(Level::Debug, "请求资源为：{}", real_path.string());
             // 此时请求中一定是静态资源
             // 读取文件内容
             std::string body;
@@ -86,7 +94,7 @@ namespace rs_http_server
             if (!ret)
                 return;
 
-            resp.setHeader("Content-Type", rs_info_get::InfoGet::getMimeType(rs_file_op::FileOp::getExtensionName(real_path)));
+            resp.setBody(body, rs_info_get::InfoGet::getMimeType(rs_file_op::FileOp::getExtensionName(real_path)));
         }
 
         // 动态资源处理
@@ -162,6 +170,7 @@ namespace rs_http_server
 
             // 根据HttpResponse组织HTTP响应字符串
             std::string resp_str = resp.constructHttpResponseStr(req);
+            // LOG(Level::Debug, "响应结果：{}", resp_str);
 
             // 发送响应
             con->send((void *)(resp_str.c_str()), resp_str.size());
@@ -176,7 +185,7 @@ namespace rs_http_server
 
             // 判断是否是GET或者HEAD请求
             // 其余请求不处理静态资源返回
-            if (req.getMethod() != "GET" || req.getMethod() != "HEAD")
+            if (req.getMethod() != "GET" && req.getMethod() != "HEAD")
                 return false;
 
             // 判断请求的资源路径是否合法
@@ -185,9 +194,16 @@ namespace rs_http_server
 
             std::filesystem::path req_path = req.getPath();
             std::filesystem::path real_path = base_dir_ / req_path;
+            // 如果请求路径为/，则直接返回根目录
+            // 当右操作数是绝对路径时（以/开头），它会替换左操作数，而不是拼接。这是std::filesystem::path的标准行为
+            if(req_path.string() == "/")
+                real_path = base_dir_.string() + "/";
+            else if (!req_path.empty() && req_path.string()[0] == '/')
+                real_path = base_dir_.string() + req_path.string();
             if (real_path.string().back() == '/')
                 real_path /= "index.html";
-
+            LOG(Level::Debug, "请求资源为：{}", real_path.string());
+            
             // 判断指定路径是否是普通文件
             if (!rs_file_op::FileOp::isRegularFile(real_path))
                 return false;
@@ -201,9 +217,12 @@ namespace rs_http_server
             // 默认情况下，认为都是静态资源请求
             if (isStaticResourceRequest(req))
             {
+                LOG(Level::Debug, "客户端正在请求静态资源");
                 staticResourceHandler(req, resp);
                 return;
             }
+
+            LOG(Level::Debug, "客户端开始请求动态资源");
 
             // 否则就是静态资源
             if (req.getMethod() == "GET" || req.getMethod() == "HEAD")
@@ -245,35 +264,34 @@ namespace rs_http_server
             while (buf.getReadableSize() > 0)
             {
                 // 从any中获取到上下文数据
-                rs_http_context::HttpContext context = std::any_cast<rs_http_context::HttpContext>(con->getContext());
+                rs_http_context::HttpContext *context = std::any_cast<rs_http_context::HttpContext>(&con->getContext());
                 // 处理缓冲区中的数据
-                context.constructHttpRequest(buf);
+                context->constructHttpRequest(buf);
                 // 获取到HttpRequest对象
-                rs_http_request::HttpRequest &req = context.getRequest();
+                rs_http_request::HttpRequest &req = context->getRequest();
                 rs_http_response::HttpResponse resp;
                 // 进行请求处理
-                if (context.getRecvStatus() == rs_http_context::ReqRecvStatus::RecvError)
+                if (context->getRecvStatus() == rs_http_context::ReqRecvStatus::RecvError)
                 {
+                    // LOG(Level::Debug, "错误请求码：{}", context->getResponseStatus());
                     // 构建错误页面
-                    constructErrorResponse(req, resp, context.getResponseStatus());
+                    constructErrorResponse(req, resp, context->getResponseStatus());
                     // 发送错误响应
                     sendResponse(con, req, resp);
+                    context->clear();
                     con->shutdown();
                     return;
                 }
 
-                if (context.getRecvStatus() != rs_http_context::ReqRecvStatus::RecvOk)
+                if (context->getRecvStatus() != rs_http_context::ReqRecvStatus::RecvOk)
                     return; // 未拿到一个完整的HTTP请求
-                else if (context.getRecvStatus() == rs_http_context::ReqRecvStatus::RecvOk)
-                {
-                    getMapping(req, resp);
-                    sendResponse(con, req, resp);
-                    // 清空上下文
-                    context.clear();
-                    // 短连接时直接关闭连接
-                    if (!req.isKeepAlive())
-                        con->shutdown();
-                }
+                getMapping(req, resp);
+                sendResponse(con, req, resp);
+                // 清空上下文
+                context->clear();
+                // 短连接时直接关闭连接
+                if (!req.isKeepAlive())
+                    con->shutdown();
             }
         }
 

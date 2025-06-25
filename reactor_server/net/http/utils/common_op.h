@@ -55,6 +55,9 @@ namespace rs_common_op
                 LOG(Level::Warning, "资源路径为空，检查失败");
                 return false;
             }
+            // 指定根目录直接返回
+            if(path == "/")
+                return true;
 
             // 分割路径
             std::vector<std::string> out;

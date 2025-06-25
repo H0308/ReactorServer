@@ -52,14 +52,14 @@ namespace rs_http_context
         {
             // 此处不需要使用break，因为处理完一个阶段要接着向下处理
             // 如果有一处失败，会因为状态检测失败而无法进入下一个阶段
-            switch (recv_status_)
+            switch(recv_status_)
             {
-            case ReqRecvStatus::RecvLine:
-                handleRequestLine(buf);
-            case ReqRecvStatus::RecvHeader:
-                handleRequestLine(buf);
-            case ReqRecvStatus::RecvBody:
-                handleRequestLine(buf);
+                case ReqRecvStatus::RecvLine:
+                    handleRequestLine(buf);
+                case ReqRecvStatus::RecvHeader:
+                    handleRequestHeader(buf);
+                case ReqRecvStatus::RecvBody:
+                    handleRequestBody(buf);
             }
         }
 
@@ -107,8 +107,12 @@ namespace rs_http_context
                 return false;
             }
 
-            // 此时可以进行处理
-            return parseHttpRequestLine(line);
+            if(!parseHttpRequestLine(line))
+                return false;
+
+            recv_status_ = ReqRecvStatus::RecvHeader;
+
+            return true;
         }
 
         // 使用正则表达式针对每一个字段进行获取
@@ -135,9 +139,8 @@ namespace rs_http_context
         {
             // 针对请求行进行字段的获取
             std::smatch matches = getContentFromRequestLine(line);
-            if (matches.size() == 0)
+            if (matches.empty())
             {
-                // 请求行数据过大
                 response_status_ = 400; // Bad Request
                 recv_status_ = ReqRecvStatus::RecvError;
                 LOG(Level::Warning, "请求行字段获取为空，处理失败");
@@ -159,48 +162,36 @@ namespace rs_http_context
             // 按照&对参数部分进行分割
             std::vector<std::string> params;
             bool ret = rs_common_op::CommonOp::split(params, matches[3].str(), params_sep);
-            if (!ret)
-            {
-                response_status_ = 400; // Bad Request
-                recv_status_ = ReqRecvStatus::RecvError;
-                LOG(Level::Warning, "参数错误，请求处理失败");
-                return false;
-            }
+            // 可能没有参数，不需要处理返回错误
+            // if (!ret)
+            // {
+            //     response_status_ = 400; // Bad Request
+            //     recv_status_ = ReqRecvStatus::RecvError;
+            //     LOG(Level::Warning, "参数错误，请求处理失败");
+            //     return false;
+            // }
             for (auto &str : params)
             {
                 std::vector<std::string> out;
                 // 按照=进行分割
                 bool ret = rs_common_op::CommonOp::split(out, str, key_value_sep);
-                if (!ret)
-                {
-                    response_status_ = 400; // Bad Request
-                    recv_status_ = ReqRecvStatus::RecvError;
-                    LOG(Level::Warning, "参数错误，请求处理失败");
-                    return false;
-                }
+                // 可能没有参数，不需要处理返回错误
+                // if (!ret)
+                // {
+                //     response_status_ = 400; // Bad Request
+                //     recv_status_ = ReqRecvStatus::RecvError;
+                //     LOG(Level::Warning, "参数错误，请求处理失败");
+                //     return false;
+                // }
 
                 std::string decode_param1;
-                if (rs_url_op::UrlOp::urlDecode(decode_param1, out[0]))
-                {
-                    response_status_ = 400; // Bad Request
-                    recv_status_ = ReqRecvStatus::RecvError;
-                    LOG(Level::Warning, "参数解码错误，请求处理失败");
-                    return false;
-                }
+                rs_url_op::UrlOp::urlDecode(decode_param1, out[0]);
 
                 std::string decode_param2;
-                if (rs_url_op::UrlOp::urlDecode(decode_param2, out[1]))
-                {
-                    response_status_ = 400; // Bad Request
-                    recv_status_ = ReqRecvStatus::RecvError;
-                    LOG(Level::Warning, "参数解码错误，请求处理失败");
-                    return false;
-                }
+                rs_url_op::UrlOp::urlDecode(decode_param2, out[1]);
 
                 request_.setParam(decode_param1, decode_param2);
             }
-
-            recv_status_ = ReqRecvStatus::RecvHeader;
 
             return true;
         }
@@ -216,6 +207,7 @@ namespace rs_http_context
                 // 获取请求行的数据
                 std::string line;
                 buf.readLine_move(line);
+
                 if (line.size() == 0)
                 {
                     if (buf.getReadableSize() > max_request_line_size)
@@ -240,8 +232,7 @@ namespace rs_http_context
                     break;
 
                 // 处理当前行数据
-                bool ret = parseHttpRequestHeader(line);
-                if (!ret)
+                if(!parseHttpRequestHeader(line))
                     return false;
             }
 
@@ -265,10 +256,12 @@ namespace rs_http_context
 
             if (key_value.size() == 2)
                 request_.setHeader(key_value[0], key_value[1]);
+
+            return true;
         }
 
         // 处理缓冲区中关于请求体字段
-        bool handleHttpRequestBody(rs_buffer::Buffer &buf)
+        bool handleRequestBody(rs_buffer::Buffer &buf)
         {
             if (recv_status_ != ReqRecvStatus::RecvBody)
                 return false;

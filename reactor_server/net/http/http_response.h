@@ -113,10 +113,10 @@ namespace rs_http_response
         {
             // 构建响应行
             std::stringstream resp_str;
-            resp_str << req.getVersion() << " " << std::to_string(status_) << rs_info_get::InfoGet::getStatusDesc(status_) << "\r\n";
+            resp_str << req.getVersion() << " " << std::to_string(status_) << " " << rs_info_get::InfoGet::getStatusDesc(status_) << "\r\n";
 
             // 构建响应头
-            std::for_each(headers_.begin(), headers_.end(), [&](std::pair<std::string, std::string> &p){
+            std::for_each(headers_.begin(), headers_.end(), [&](const std::pair<std::string, std::string> &p){
                 resp_str << p.first << ": " << p.second << "\r\n";
             });
 
