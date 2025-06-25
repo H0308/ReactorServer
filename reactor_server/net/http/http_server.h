@@ -86,7 +86,6 @@ namespace rs_http_server
                 real_path = base_dir_.string() + req_path.string();
             if (real_path.string().back() == '/')
                 real_path /= "index.html";
-            LOG(Level::Debug, "请求资源为：{}", real_path.string());
             // 此时请求中一定是静态资源
             // 读取文件内容
             std::string body;
@@ -202,7 +201,6 @@ namespace rs_http_server
                 real_path = base_dir_.string() + req_path.string();
             if (real_path.string().back() == '/')
                 real_path /= "index.html";
-            LOG(Level::Debug, "请求资源为：{}", real_path.string());
             
             // 判断指定路径是否是普通文件
             if (!rs_file_op::FileOp::isRegularFile(real_path))
@@ -217,12 +215,9 @@ namespace rs_http_server
             // 默认情况下，认为都是静态资源请求
             if (isStaticResourceRequest(req))
             {
-                LOG(Level::Debug, "客户端正在请求静态资源");
                 staticResourceHandler(req, resp);
                 return;
             }
-
-            LOG(Level::Debug, "客户端开始请求动态资源");
 
             // 否则就是静态资源
             if (req.getMethod() == "GET" || req.getMethod() == "HEAD")
