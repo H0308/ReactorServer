@@ -206,6 +206,7 @@ namespace rs_http_context
             {
                 // 获取请求行的数据
                 std::string line;
+                // 注意会读取到换行符
                 buf.readLine_move(line);
 
                 if (line.size() == 0)
@@ -242,8 +243,14 @@ namespace rs_http_context
         }
 
         // 处理请求头字段
-        bool parseHttpRequestHeader(const std::string &line)
+        bool parseHttpRequestHeader(std::string &line)
         {
+            // 先处理掉换行符
+            if(line.back() == '\n')
+                line.pop_back();
+            if(line.back() == '\r')
+                line.pop_back();
+
             std::vector<std::string> key_value;
             bool ret = rs_common_op::CommonOp::split(key_value, line, header_sep);
             if (!ret)

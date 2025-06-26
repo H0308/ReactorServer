@@ -27,6 +27,8 @@ namespace rs_http_server
         {
             server_.setConnectedCallback(std::bind(&HttpServer::onConnected, this, std::placeholders::_1));
             server_.setMessageCallback(std::bind(&HttpServer::onMessage, this, std::placeholders::_1, std::placeholders::_2));
+            server_.setOuterCloseCallback(std::bind(&HttpServer::onClose, this, std::placeholders::_1));
+            server_.enableTimeoutRelease(timeout);
         }
 
         // 设置GET请求处理映射
@@ -282,12 +284,19 @@ namespace rs_http_server
                     return; // 未拿到一个完整的HTTP请求
                 getMapping(req, resp);
                 sendResponse(con, req, resp);
-                // 清空上下文
+                // 清空上下文，注意上方取得的是HttpContext中关于HttpRequest对象的引用
+                // 在下方判断长短连接时需要使用设置的HttpResponse对象进行，而不能使用HttpRequest
+                // 因为clear中会对HttpRequest对象进行释放，间接影响了上方拿到的关于HttpRequest引用对象
                 context->clear();
                 // 短连接时直接关闭连接
-                if (!req.isKeepAlive())
+                if (!resp.isKeepAlive())
                     con->shutdown();
             }
+        }
+
+        void onClose(const rs_connection::Connection::ptr &con)
+        {
+            LOG(Level::Info, "客户端：{}断开连接", con->getFd());
         }
 
     private:
