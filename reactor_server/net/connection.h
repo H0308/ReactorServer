@@ -148,7 +148,7 @@ namespace rs_connection
         }
 
         // 使用传值调用确保临时对象的创建
-        void sendInLoop(rs_buffer::Buffer buffer)
+        void sendInLoop(rs_buffer::Buffer &buffer)
         {
             // 该接口本身不发送数据，只是将数据放入写入缓冲区，启动读事件监控即可
             // 如果连接是待关闭状态就不再发送数据

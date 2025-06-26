@@ -6,37 +6,8 @@
 
 namespace rs_info_get
 {
-    class InfoGet
-    {
-    public:
-        // 获取状态码对应的状态码描述
-        static std::string getStatusDesc(int code)
-        {
-            auto pos = status_msg_.find(code);
-            if (pos == status_msg_.end())
-                return "none";
-
-            return pos->second;
-        }
-
-        // 获取MIME类型
-        static std::string getMimeType(const std::string &type)
-        {
-            if (type == "")
-                return "application/octet-stream";
-            auto pos = mime_msg_.find(type);
-            if (pos == mime_msg_.end())
-                return "application/octet-stream";
-
-            return pos->second;
-        }
-
-    private:
-        static std::unordered_map<int, std::string> status_msg_;
-        static std::unordered_map<std::string, std::string> mime_msg_;
-    };
-
-    std::unordered_map<int, std::string> InfoGet::status_msg_ =
+    
+    std::unordered_map<int, std::string> status_msg =
         {
             {100, "Continue"},
             {101, "Switching Protocol"},
@@ -101,7 +72,7 @@ namespace rs_info_get
             {510, "Not Extended"},
             {511, "Network Authentication Required"}};
 
-    std::unordered_map<std::string, std::string> InfoGet::mime_msg_ =
+    std::unordered_map<std::string, std::string> mime_msg =
         {
             {".aac", "audio/aac"},
             {".abw", "application/x-abiword"},
@@ -173,6 +144,32 @@ namespace rs_info_get
             {".3gp", "video/3gpp"},
             {".3g2", "video/3gpp2"},
             {".7z", "application/x-7z-compressed"}};
+
+    class InfoGet
+    {
+    public:
+        // 获取状态码对应的状态码描述
+        static std::string getStatusDesc(int code)
+        {
+            auto pos = status_msg.find(code);
+            if (pos == status_msg.end())
+                return "none";
+
+            return pos->second;
+        }
+
+        // 获取MIME类型
+        static std::string getMimeType(const std::string &type)
+        {
+            if (type == "")
+                return "application/octet-stream";
+            auto pos = mime_msg.find(type);
+            if (pos == mime_msg.end())
+                return "application/octet-stream";
+
+            return pos->second;
+        }
+    };
 }
 
 #endif

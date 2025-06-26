@@ -156,7 +156,7 @@ namespace rs_http_context
             // 路径部分并没有规定空格转加号
             rs_url_op::UrlOp::urlDecode(decode_path, matches[2].str());
             request_.setPath(decode_path);
-            request_.setBody(matches[4].str());
+            request_.setVersion(matches[4].str());
 
             // 处理请求参数
             // 按照&对参数部分进行分割

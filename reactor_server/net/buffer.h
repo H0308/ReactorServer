@@ -82,8 +82,8 @@ namespace rs_buffer
         // 将data数据写入指定长度到缓冲区中
         void write_noMove(void *data, size_t len)
         {
-            if(len == 0)
-                return ;
+            if (len == 0)
+                return;
             // 1. 确保空间足够
             setEnoughSpace(len);
             const char *data1 = static_cast<const char *>(data);
@@ -115,13 +115,13 @@ namespace rs_buffer
         // 写入其他缓冲区的数据——不移动写入指针
         void write_noMove(const Buffer &data)
         {
-            write_noMove((void*)(data.getReadPos()), data.getReadableSize());
+            write_noMove((void *)(data.getReadPos()), data.getReadableSize());
         }
 
         // 写入其他缓冲区的数据——移动写入指针
         void write_move(const Buffer &data)
         {
-            write_move((void*)(data.getReadPos()), data.getReadableSize());
+            write_move((void *)(data.getReadPos()), data.getReadableSize());
         }
 
         // 读取任意数据——不移动指针
@@ -129,7 +129,7 @@ namespace rs_buffer
         void read_noMove(void *buf, size_t len)
         {
             // 处理空指针
-            if(!buf)
+            if (!buf)
                 return;
             // 1. 确保要求的长度小于可读空间大小
             uint64_t readable_size = getReadableSize();
@@ -151,12 +151,16 @@ namespace rs_buffer
         // 读取数据存入字符串——不移动指针
         void read_noMove(std::string &buf, size_t len)
         {
+            // 确保字符串有足够的空间
+            buf.resize(len);
             read_noMove(&(buf[0]), len);
         }
 
         // 读取数据存入字符串——移动指针
         void read_move(std::string &buf, size_t len)
         {
+            // 确保字符串有足够的空间
+            buf.resize(len);
             read_move(&(buf[0]), len);
         }
 
@@ -239,8 +243,8 @@ namespace rs_buffer
         // 偏移读取指针
         void moveReadPtr(size_t len)
         {
-            if(len == 0)
-                return ;
+            if (len == 0)
+                return;
             assert(len <= getReadableSize());
             read_idx_ += len;
         }

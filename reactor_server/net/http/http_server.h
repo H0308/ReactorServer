@@ -171,7 +171,6 @@ namespace rs_http_server
 
             // 根据HttpResponse组织HTTP响应字符串
             std::string resp_str = resp.constructHttpResponseStr(req);
-            // LOG(Level::Debug, "响应结果：{}", resp_str);
 
             // 发送响应
             con->send((void *)(resp_str.c_str()), resp_str.size());
@@ -270,12 +269,12 @@ namespace rs_http_server
                 // 进行请求处理
                 if (context->getRecvStatus() == rs_http_context::ReqRecvStatus::RecvError)
                 {
-                    // LOG(Level::Debug, "错误请求码：{}", context->getResponseStatus());
                     // 构建错误页面
                     constructErrorResponse(req, resp, context->getResponseStatus());
                     // 发送错误响应
                     sendResponse(con, req, resp);
                     context->clear();
+                    buf.moveReadPtr(buf.getReadableSize());
                     con->shutdown();
                     return;
                 }

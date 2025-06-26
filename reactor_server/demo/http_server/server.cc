@@ -1,4 +1,5 @@
 #include <reactor_server/net/signal_ign.h>
+#include <sstream>
 #include <reactor_server/net/http/http_server.h>
 
 using namespace log_system;
@@ -8,6 +9,9 @@ const std::string default_base_dir = "./wwwroot";
 void getHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)
 {
     LOG(Level::Info, "收到GET请求");
+    std::string resp_str = resp.constructHttpResponseStr(req);
+    LOG(Level::Debug, "响应结果为：{}", resp_str);
+    resp.setBody(resp_str);
 }
 
 void postHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)
