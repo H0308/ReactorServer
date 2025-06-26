@@ -282,6 +282,9 @@ namespace rs_http_server
                 if (context->getRecvStatus() != rs_http_context::ReqRecvStatus::RecvOk)
                     return; // 未拿到一个完整的HTTP请求
                 getMapping(req, resp);
+                // 如果是404响应，就构造一个404响应对象
+                if (resp.getStatus() == 404)
+                    constructErrorResponse(req, resp, 404);
                 sendResponse(con, req, resp);
                 // 清空上下文，注意上方取得的是HttpContext中关于HttpRequest对象的引用
                 // 在下方判断长短连接时需要使用设置的HttpResponse对象进行，而不能使用HttpRequest
