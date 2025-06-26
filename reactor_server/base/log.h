@@ -13,8 +13,8 @@
     LOG(level, format, args)
 */
 
-#ifndef __rpc_log_h__
-#define __rpc_log_h__
+#ifndef __rs_log_h__
+#define __rs_log_h__
 
 #include <memory>
 #include <string>
@@ -23,7 +23,7 @@
 #include "spdlog/sinks/basic_file_sink.h"    // 文件日志
 #include "spdlog/sinks/stdout_color_sinks.h" // 控制台彩色日志
 
-namespace log_system
+namespace rs_log_system
 {
     // 日志等级，与spdlog等级对应
     enum class Level
@@ -158,26 +158,25 @@ namespace log_system
 #define LOG(level, format, ...)              \
     switch (level)                           \
     {                                        \
-    case log_system::Level::Debug:           \
+    case rs_log_system::Level::Debug:        \
         LOG_DEBUG(format, ##__VA_ARGS__);    \
         break;                               \
-    case log_system::Level::Info:            \
+    case rs_log_system::Level::Info:         \
         LOG_INFO(format, ##__VA_ARGS__);     \
         break;                               \
-    case log_system::Level::Warning:         \
+    case rs_log_system::Level::Warning:      \
         LOG_WARN(format, ##__VA_ARGS__);     \
         break;                               \
-    case log_system::Level::Error:           \
+    case rs_log_system::Level::Error:        \
         LOG_ERROR(format, ##__VA_ARGS__);    \
         break;                               \
-    case log_system::Level::Critical:        \
+    case rs_log_system::Level::Critical:     \
         LOG_CRITICAL(format, ##__VA_ARGS__); \
         break;                               \
     default:                                 \
         LOG_INFO(format, ##__VA_ARGS__);     \
         break;                               \
     }
-
 }
 
 #endif
