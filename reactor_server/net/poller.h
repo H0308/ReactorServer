@@ -11,7 +11,7 @@
 
 namespace rs_poller
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     const int max_ready_events = 1024;
 

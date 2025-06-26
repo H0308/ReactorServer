@@ -2,7 +2,7 @@
 #include <sstream>
 #include <reactor_server/net/http/http_server.h>
 
-using namespace log_system;
+using namespace rs_log_system;
 
 const std::string default_base_dir = "./wwwroot";
 

@@ -9,7 +9,7 @@
 
 namespace rs_http_context
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     enum class ReqRecvStatus
     {

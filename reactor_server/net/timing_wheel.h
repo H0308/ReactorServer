@@ -17,7 +17,7 @@ namespace rs_event_loop_lock_queue
 
 namespace rs_timing_wheel
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     class TimingWheel
     {

@@ -8,7 +8,7 @@
 
 namespace rs_common_op
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     class CommonOp
     {

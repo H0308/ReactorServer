@@ -7,7 +7,7 @@
 
 namespace rs_file_op
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     class FileOp
     {

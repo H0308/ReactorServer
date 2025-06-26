@@ -12,7 +12,7 @@
 
 namespace rs_http_server
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     const int default_timeout = 10;
 

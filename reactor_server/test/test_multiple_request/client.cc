@@ -5,7 +5,7 @@
 #include <reactor_server/net/socket.h>
 #include <reactor_server/base/log.h>
 
-using namespace log_system;
+using namespace rs_log_system;
 
 int main()
 {

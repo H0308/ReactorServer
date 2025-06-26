@@ -8,7 +8,7 @@
 #include <reactor_server/base/log.h>
 #include <reactor_server/net/http/utils/file_op.h>
 
-using namespace log_system;
+using namespace rs_log_system;
 
 int main()
 {

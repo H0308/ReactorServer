@@ -9,7 +9,7 @@
 
 namespace rs_connection
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     // 连接状态
     enum class ConnectionStatus

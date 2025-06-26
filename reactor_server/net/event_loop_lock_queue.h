@@ -10,7 +10,7 @@
 
 namespace rs_event_loop_lock_queue
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     // 任务类型
     using task_t = std::function<void()>;

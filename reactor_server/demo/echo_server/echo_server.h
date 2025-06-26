@@ -5,7 +5,7 @@
 
 namespace echo_server
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     class EchoServer
     {

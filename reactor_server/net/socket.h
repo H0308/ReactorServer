@@ -10,7 +10,7 @@
 
 namespace rs_socket
 {
-    using namespace log_system;
+    using namespace rs_log_system;
 
     const uint16_t default_port = 8080;
     const std::string default_ip = "127.0.0.1";

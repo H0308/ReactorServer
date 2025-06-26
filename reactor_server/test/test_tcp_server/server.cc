@@ -6,7 +6,7 @@
 #include <reactor_server/base/log.h>
 #include <reactor_server/net/tcp_server.h>
 
-using namespace log_system;
+using namespace rs_log_system;
 
 void onConnected(const rs_connection::Connection::ptr &con)
 {

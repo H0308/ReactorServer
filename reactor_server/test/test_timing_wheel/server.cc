@@ -9,7 +9,7 @@
 #include <reactor_server/net/channel.h>
 #include <reactor_server/net/event_loop_lock_queue.h>
 
-using namespace log_system;
+using namespace rs_log_system;
 
 void handleRead(const rs_channel::Channel::ptr &client_channel, const rs_socket::Socket::ptr &client_socket);
 void handleWrite(const rs_channel::Channel::ptr &client_channel, const rs_socket::Socket::ptr &client_socket);

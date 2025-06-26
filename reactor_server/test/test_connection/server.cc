@@ -10,7 +10,7 @@
 #include <reactor_server/net/event_loop_lock_queue.h>
 #include <reactor_server/net/connection.h>
 
-using namespace log_system;
+using namespace rs_log_system;
 
 // 管理所有客户端连接的哈希表
 std::unordered_map<std::string, rs_connection::Connection::ptr> clients;
