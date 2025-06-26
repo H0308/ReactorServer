@@ -14,7 +14,7 @@ namespace rs_http_server
 {
     using namespace log_system;
 
-    const int default_timeout = 30;
+    const int default_timeout = 10;
 
     class HttpServer
     {
