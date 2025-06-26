@@ -24,6 +24,8 @@ void postHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpRespon
 void putHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)
 {
     LOG(Level::Info, "收到PUT请求");
+    // 读取大文件保存到当前网站根目录
+    rs_file_op::FileOp::writeFile(default_base_dir + "/" + "test.txt", req.getBody());
 }
 
 void deleteHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)
