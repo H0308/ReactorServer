@@ -184,13 +184,15 @@ namespace rs_http_context
                 //     return false;
                 // }
 
-                std::string decode_param1;
-                rs_url_op::UrlOp::urlDecode(decode_param1, out[0]);
+                if (out.size() >= 2)
+                {
+                    std::string decode_param1;
+                    rs_url_op::UrlOp::urlDecode(decode_param1, out[0]);
 
-                std::string decode_param2;
-                rs_url_op::UrlOp::urlDecode(decode_param2, out[1]);
-
-                request_.setParam(decode_param1, decode_param2);
+                    std::string decode_param2;
+                    rs_url_op::UrlOp::urlDecode(decode_param2, out[1]);
+                    request_.setParam(decode_param1, decode_param2);
+                }
             }
 
             return true;
