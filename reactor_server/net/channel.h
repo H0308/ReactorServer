@@ -89,36 +89,27 @@ namespace rs_channel
             // 先读后写，错误优先，关闭最后
             if ((revents_ & EPOLLIN) || (revents_ & EPOLLRDHUP) || (revents_ & EPOLLPRI))
             {
-                // 任意事件回调，先处理任意事件，防止在写入时关闭文件描述符导致任意事件回调错误执行
-                if (any_cb_)
-                    any_cb_();
                 if (read_cb_)
                     read_cb_();
             }
             if (revents_ & EPOLLOUT)
             {
-                // 任意事件回调，先处理任意事件，防止在写入时关闭文件描述符导致任意事件回调错误执行
-                if (any_cb_)
-                    any_cb_();
                 if (write_cb_)
                     write_cb_();
             }
             else if (revents_ & EPOLLERR)
             {
-                // 任意事件回调
-                if (any_cb_)
-                    any_cb_();
                 if (error_cb_)
                     error_cb_();
             }
             else if (revents_ & EPOLLHUP)
             {
-                // 任意事件回调
-                if (any_cb_)
-                    any_cb_();
                 if (close_cb_)
                     close_cb_();
             }
+            // 任意事件回调
+            if (any_cb_)
+                any_cb_();
         }
 
         // 设置读事件回调

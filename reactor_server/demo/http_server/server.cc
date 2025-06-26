@@ -10,8 +10,11 @@ void getHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpRespons
 {
     LOG(Level::Info, "收到GET请求");
     std::string resp_str = resp.constructHttpResponseStr(req);
-    LOG(Level::Debug, "响应结果为：{}", resp_str);
+    // LOG(Level::Debug, "响应结果为：{}", resp_str);
     resp.setBody(resp_str);
+
+    // 模仿超时的业务处理
+    sleep(15);
 }
 
 void postHandler(rs_http_request::HttpRequest &req, rs_http_response::HttpResponse &resp)

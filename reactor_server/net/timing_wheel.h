@@ -42,8 +42,10 @@ namespace rs_timing_wheel
         // 定时文件描述符可读事件触发回调
         void executeTimerTask()
         {
-            readTimerFd();
-            runTasks();
+            int gap = readTimerFd();
+            // 根据实际超时次数进行任务处理
+            for(int i = 0; i < gap; i++)
+                runTasks();
         }
 
         // 判断是否存在指定定时器
@@ -99,17 +101,19 @@ namespace rs_timing_wheel
         }
 
         // 读取定时器文件描述符
-        void readTimerFd()
+        int readTimerFd()
         {
             uint64_t gap = 0;
             ssize_t ret = read(timerfd_, &gap, 8);
             if (ret <= 0)
             {
                 if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
-                    return;
+                    return 0;
                 LOG(Level::Error, "读取定时文件描述符失败");
                 exit(static_cast<int>(rs_error::ErrorNum::Timerfd_read_fail));
             }
+
+            return gap;
         }
 
         // 取消任务
