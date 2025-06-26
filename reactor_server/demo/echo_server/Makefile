@@ -1,7 +1,9 @@
 CC=g++
 CFLAGS=-std=c++17 -O3 -DNDEBUG -march=native -flto=auto
-INCLUDES=-I/home/epsda/ReactorServer/
-# LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system -fsanitize=address -g -flto=auto
+# CFLAGS=-std=c++17
+# INCLUDES=-I项目目录
+# 例如：INCLUDES=-I/home/epsda/ReactorServer/
+# LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system -fsanitize=address -g
 LDFLAGS=-lpthread -lfmt -lspdlog -lboost_system -flto=auto
 
 # 主要目标
