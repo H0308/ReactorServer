@@ -71,7 +71,8 @@ namespace rs_tcp_server
             const std::string id = rs_uuid_generator::UuidGenerator::generate_uuid();
             rs_connection::Connection::ptr client = std::make_shared<rs_connection::Connection>(loop_pool_->getNextLoop(), id, newfd);
 
-            client->enableTimeoutRelease(10);
+            if (enable_timeout_release_)
+                client->enableTimeoutRelease(timeout_);
 
             client->setConnectedCallback(con_cb_);
             client->setMessageCallback(msg_cb_);
@@ -104,7 +105,7 @@ namespace rs_tcp_server
         }
 
     private:
-        int thread_num_; 
+        int thread_num_;
         bool enable_timeout_release_;
         uint32_t timeout_;
         rs_event_loop_lock_queue::EventLoopLockQueue::ptr base_loop_;
