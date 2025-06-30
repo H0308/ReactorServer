@@ -190,12 +190,13 @@ namespace rs_socket
                 return false;
             if(isNonBlock)
                 setSocketNonBlock();
+            // 确保地址重用在bind之前
+            setReuseAddressAndPort();
             if(!bind(port))
                 return false;
             if(!listen())
                 return false;
 
-            setReuseAddressAndPort();
 
             return true;
         }
